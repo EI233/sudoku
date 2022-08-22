@@ -1,0 +1,120 @@
+#RightMenu {
+    background-color: rgba(73, 84, 116, 180);
+    border-radius: 10px;
+   }
+#RightMenuContainers {
+    background-color: transparent;
+}
+#RightMenuButtons {
+    background-color: transparent;
+}
+#RightMenuTop{
+    background-color: rgb(255, 255, 249);
+}
+QPushButton {
+border: 1px solid rgb(52, 59, 72);
+border-radius: 5px;
+background-color:#495474;
+}
+QPushButton:hover {
+background-color: #5d6c99;
+border: 2px solid rgb(61, 70, 86);
+}
+QPushButton:pressed {
+background-color: rgb(35, 40, 49);
+border: 2px solid rgb(43, 50, 61);
+}
+QPushButton {
+color: rgb(255, 255, 255);
+font-size: 15px;
+font-weight:bold;
+}
+QLabel{color: rgb(255, 255, 255);
+font-size: 15px;
+font-weight:bold;
+}
+QFrame{border-radius: 5px;background-color: #495474;}
+
+QComboBox
+{
+	color: rgb(255, 255, 255);
+    font-size: 15px;
+    font-weight:bold;
+	border-color:rgb(57, 65, 80);
+	border-style:solid;
+	border-width: 0.5 0.5 0.5 0.5;
+	background-color: #495474;
+	border-radius: 5px;
+	padding-left: 12px;
+}
+
+QComboBox::drop-down
+{
+	margin-right: 10px;
+	border: none;
+}
+
+QComboBox::down-arrow
+{
+	width:14px;
+	height:16px;
+	border-image:url(images/angle-down.png);
+}
+
+QComboBox QAbstractItemView
+{
+    outline: 0px;
+	color: rgb(255, 255, 255);
+    font-size: 15px;
+    font-weight:bold;
+	border-radius: 8px;
+	padding:5px;
+	background-color: rgb(52, 59, 72);
+}
+
+QComboBox QAbstractItemView::item
+{
+    border-radius: 8px;
+	height: 30px;
+}
+
+QComboBox QAbstractItemView::item:hover{
+border-radius: 8px;
+  background-color:rgb(57, 65, 80);
+  color:#ffffff;
+}
+QComboBox QAbstractItemView::item:selected
+{
+border-radius: 8px;
+    background-color:rgb(35, 40, 49);
+	color:#ffffff;
+}
+#Tip { padding-left: 50px;text-align:left;}
+#Stop { padding-left: 50px;text-align:left;}
+#Start { padding-left: 50px;text-align:left;}
+#Restart { padding-left: 50px;text-align:left;}
+QToolTip {
+	color: #333;
+	background-color: #f8f8f2;
+	border: 1px solid #CCC;
+	background-image: none;
+	background-position: left center;
+    background-repeat: no-repeat;
+	border: none;
+	border-left: 2px solid rgb(255, 121, 198);
+	text-align: left;
+	padding-left: 8px;
+	margin: 0px;
+}
+#TipLabel{
+    background-color:transparent;
+}
+#RecordLabel{
+padding-left: 8px;
+text-align: right;
+	font-size: 12px;
+	font-weight: bold;
+}
+#TipBox{color: rgb(255, 255, 255);
+    font-size: 15px;
+    font-weight:bold;}
