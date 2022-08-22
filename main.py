@@ -432,7 +432,7 @@ class MainWindow(QMainWindow):
         self.verticalLayout_11.setObjectName(u"verticalLayout_11")
         self.verticalLayout_11.setContentsMargins(0, 0, 0, 0)
         self.btn_share = QPushButton(self.extraTopMenu)
-        self.btn_share.setObjectName(u"btn_share")
+        self.btn_share.setObjectName(u"share")
         self.btn_share.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         sizePolicy.setHeightForWidth(self.btn_share.sizePolicy().hasHeightForWidth())
         self.btn_share.setSizePolicy(sizePolicy)
@@ -441,7 +441,7 @@ class MainWindow(QMainWindow):
         self.btn_share.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_share.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.btn_share.setIcon(QIcon("icons/solid/share-nodes.svg"))
-
+        self.btn_share.clicked.connect(self.buttonClick)
         self.verticalLayout_11.addWidget(self.btn_share)
 
         self.Adjustments_Button = QPushButton(self.extraTopMenu)
@@ -1071,7 +1071,8 @@ class MainWindow(QMainWindow):
                 themeFile = "Qss/py_dracula_light.qss"
                 self.HomeDecription.setHtml(Light_Home)
             UIFunctions.theme(self, themeFile, True)
-
+        if btnName=="share":
+            QDesktopServices.openUrl(QUrl("https://github.com/EI233/sudoku"))
     def ButtonClick(self):
         btn = self.sender()
         btnName = btn.objectName()
