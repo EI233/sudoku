@@ -1066,9 +1066,10 @@ class MainWindow(QMainWindow):
         if btnName == "Adjustments":
             if themeFile == "Qss/py_dracula_light.qss":
                 themeFile = "Qss/py_dracula_dark.qss"
-
+                self.HomeDecription.setHtml(Dark_Home)
             else:
                 themeFile = "Qss/py_dracula_light.qss"
+                self.HomeDecription.setHtml(Light_Home)
             UIFunctions.theme(self, themeFile, True)
 
     def ButtonClick(self):
