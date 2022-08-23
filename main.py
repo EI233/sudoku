@@ -3,11 +3,11 @@ import sys
 from ctypes import cdll
 from random import choice
 
-from PyQt6.QtCore import QCoreApplication, QRect, QEasingCurve, QMetaObject, pyqtSignal, QUrl
+from PyQt6.QtCore import QCoreApplication, QRect, QEasingCurve, QMetaObject, pyqtSignal, QUrl,Qt,QSize
 from PyQt6.QtGui import QFont, QMouseEvent, QCursor, QIcon, QDesktopServices
 from PyQt6.QtWidgets import QWidget, QFrame, QStackedWidget, QMainWindow, QVBoxLayout, QSizePolicy, QGridLayout, \
     QTextEdit, QApplication, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QListView, QListWidget, \
-    QListWidgetItem
+    QListWidgetItem,QSizeGrip
 from Qss.Home import *
 from moudules import *
 
@@ -82,7 +82,7 @@ class Timer(QLabel):
         clock.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         clock.setStyleSheet("background-color: transparent;"
                             "border: 1px solid transparent;")
-        clock.setIcon(QIcon("icons/solid/clock.svg"))
+        clock.setIcon(QIcon("icons/clock.svg"))
         HLayout = QHBoxLayout()
         HLayout.setContentsMargins(0, 0, 0, 0)
         HLayout.addSpacing(0)
@@ -146,7 +146,6 @@ class MainWindow(QMainWindow):
         # SET UI DEFINITIONS
         # ///////////////////////////////////////////////////////////////
         UIFunctions.uiDefinitions(self)
-
         # BUTTONS CLICK
         # ///////////////////////////////////////////////////////////////
 
@@ -294,7 +293,7 @@ class MainWindow(QMainWindow):
         self.toggleButton.setFont(font)
         self.toggleButton.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.toggleButton.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.toggleButton.setIcon(QIcon("icons/solid/bars.svg"))
+        self.toggleButton.setIcon(QIcon("icons/bars.svg"))
         self.toggleButton.setIconSize(QSize(20, 20))
         self.verticalLayout_4.addWidget(self.toggleButton)
 
@@ -317,7 +316,7 @@ class MainWindow(QMainWindow):
         self.btn_home.setFont(font)
         self.btn_home.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_home.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.btn_home.setIcon(QIcon("icons/solid/house.svg"))
+        self.btn_home.setIcon(QIcon("icons/house.svg"))
         self.btn_home.setIconSize(QSize(20, 20))
         self.verticalLayout_8.addWidget(self.btn_home)
         self.Game_Sudoku = QPushButton(self.topMenu)
@@ -329,7 +328,7 @@ class MainWindow(QMainWindow):
         self.Game_Sudoku.setFont(font)
         self.Game_Sudoku.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.Game_Sudoku.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.Game_Sudoku.setIcon(QIcon("icons/solid/gamepad.svg"))
+        self.Game_Sudoku.setIcon(QIcon("icons/gamepad.svg"))
         self.Game_Sudoku.setIconSize(QSize(20, 20))
         self.verticalLayout_8.addWidget(self.Game_Sudoku)
         self.verticalMenuLayout.addWidget(self.topMenu, 0, Qt.AlignmentFlag.AlignTop)
@@ -350,7 +349,7 @@ class MainWindow(QMainWindow):
         self.toggleLeftBox.setFont(font)
         self.toggleLeftBox.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.toggleLeftBox.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.toggleLeftBox.setIcon(QIcon("icons/solid/gear.svg"))
+        self.toggleLeftBox.setIcon(QIcon("icons/gears.svg"))
         self.toggleLeftBox.setIconSize(QSize(20, 20))
 
         self.verticalLayout_9.addWidget(self.toggleLeftBox)
@@ -405,7 +404,7 @@ class MainWindow(QMainWindow):
         self.extraCloseColumnBtn.setMinimumSize(QSize(28, 28))
         self.extraCloseColumnBtn.setMaximumSize(QSize(28, 28))
         self.extraCloseColumnBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        icon = QIcon('icons/solid/xmark.svg')
+        icon = QIcon('icons/xmark.svg')
         self.extraCloseColumnBtn.setIcon(icon)
         self.extraCloseColumnBtn.setIconSize(QSize(20, 20))
 
@@ -440,7 +439,7 @@ class MainWindow(QMainWindow):
         self.btn_share.setFont(font)
         self.btn_share.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_share.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.btn_share.setIcon(QIcon("icons/solid/share-nodes.svg"))
+        self.btn_share.setIcon(QIcon("icons/square-share-nodes.svg"))
         self.btn_share.clicked.connect(self.buttonClick)
         self.verticalLayout_11.addWidget(self.btn_share)
 
@@ -453,7 +452,7 @@ class MainWindow(QMainWindow):
         self.Adjustments_Button.setFont(font)
         self.Adjustments_Button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.Adjustments_Button.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.Adjustments_Button.setIcon(QIcon("icons/solid/sliders.svg"))
+        self.Adjustments_Button.setIcon(QIcon("icons/sliders.svg"))
         self.Adjustments_Button.clicked.connect(self.buttonClick)
 
         self.verticalLayout_11.addWidget(self.Adjustments_Button)
@@ -467,7 +466,7 @@ class MainWindow(QMainWindow):
         self.btn_more.setFont(font)
         self.btn_more.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_more.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.btn_more.setIcon(QIcon("icons/solid/layer-group.svg"))
+        self.btn_more.setIcon(QIcon("icons/layer-group.svg"))
         self.btn_more.clicked.connect(self.buttonClick)
 
         self.verticalLayout_11.addWidget(self.btn_more)
@@ -564,7 +563,7 @@ class MainWindow(QMainWindow):
         self.settingsTopBtn.setMinimumSize(QSize(28, 28))
         self.settingsTopBtn.setMaximumSize(QSize(28, 28))
         self.settingsTopBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.settingsTopBtn.setIcon(QIcon("icons/solid/gear.svg"))
+        self.settingsTopBtn.setIcon(QIcon("icons/gear.svg"))
         self.settingsTopBtn.setIconSize(QSize(20, 20))
         self.settingsTopBtn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.horizontalLayout_2.addWidget(self.settingsTopBtn)
@@ -575,7 +574,7 @@ class MainWindow(QMainWindow):
         self.minimizeAppBtn.setMaximumSize(QSize(28, 28))
         self.minimizeAppBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.minimizeAppBtn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.minimizeAppBtn.setIcon(QIcon('icons/solid/window-minimize.svg'))
+        self.minimizeAppBtn.setIcon(QIcon('icons/window-minimize.svg'))
         self.minimizeAppBtn.setIconSize(QSize(20, 20))
         self.horizontalLayout_2.addWidget(self.minimizeAppBtn)
         self.maximizeRestoreAppBtn = QPushButton(self.rightButtons)
@@ -591,7 +590,7 @@ class MainWindow(QMainWindow):
         font3.setStyleStrategy(QFont.StyleStrategy.PreferDefault)
         self.maximizeRestoreAppBtn.setFont(font3)
         self.maximizeRestoreAppBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.maximizeRestoreAppBtn.setIcon(QIcon("icons/solid/window-maximize.svg"))
+        self.maximizeRestoreAppBtn.setIcon(QIcon("icons/window-maximize.svg"))
         self.maximizeRestoreAppBtn.setIconSize(QSize(20, 20))
 
         self.horizontalLayout_2.addWidget(self.maximizeRestoreAppBtn)
@@ -704,11 +703,11 @@ class MainWindow(QMainWindow):
         SudokuStopButton = QPushButton(self.RightMenu)
         SudokuInfoButton = QPushButton(self.RightMenu)
         SudokuSubmitButton = QPushButton(self.RightMenu)
-        SudokuSubmitButton.setIcon(QIcon("icons/solid/plane-up.svg"))
-        SudokuStartButton.setIcon(QIcon("icons/solid/play.svg"))
-        SudokuRestartButton.setIcon(QIcon("icons/solid/arrow-rotate-right"))
-        SudokuStopButton.setIcon(QIcon("icons/solid/circle-pause.svg"))
-        SudokuInfoButton.setIcon(QIcon("icons/solid/circle-info.svg"))
+        SudokuSubmitButton.setIcon(QIcon("icons/paper-plane.svg"))
+        SudokuStartButton.setIcon(QIcon("icons/circle-play.svg"))
+        SudokuRestartButton.setIcon(QIcon("icons/arrow-rotate-right.svg"))
+        SudokuStopButton.setIcon(QIcon("icons/circle-pause.svg"))
+        SudokuInfoButton.setIcon(QIcon("icons/circle-info.svg"))
         SudokuInfoButton.setText("Tip")
         SudokuStartButton.setText("Start")
         SudokuStopButton.setText("Stop")
@@ -823,7 +822,7 @@ class MainWindow(QMainWindow):
         Message_Button.setText("  Message")
         Message_Button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         Message_Button.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        Message_Button.setIcon(QIcon("icons/solid/envelope-open-text.svg"))
+        Message_Button.setIcon(QIcon("icons/square-envelope.svg"))
         Message_Button.setIconSize(QSize(30, 30))
         Message_Button.clicked.connect(self.buttonClick)
         self.RightBoxButtonsLayout.addWidget(Message_Button, 0, Qt.AlignmentFlag.AlignLeft)

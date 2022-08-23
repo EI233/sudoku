@@ -40,7 +40,7 @@ class UIFunctions(MainWindow):
             GLOBAL_STATE = True
             self.appMargins.setContentsMargins(0, 0, 0, 0)
             self.maximizeRestoreAppBtn.setToolTip("Restore")
-            self.maximizeRestoreAppBtn.setIcon(QIcon(u"icons/solid/window-restore.svg"))
+            self.maximizeRestoreAppBtn.setIcon(QIcon(u"icons/window-restore.svg"))
             self.maximizeRestoreAppBtn.setMinimumSize(QSize(25, 25))
             self.maximizeRestoreAppBtn.setMaximumSize(QSize(25, 25))
             self.left_grip.hide()
@@ -52,7 +52,7 @@ class UIFunctions(MainWindow):
             self.showNormal()
             self.appMargins.setContentsMargins(10, 10, 10, 10)
             self.maximizeRestoreAppBtn.setToolTip("Maximize")
-            self.maximizeRestoreAppBtn.setIcon(QIcon("icons/solid/window-maximize.svg"))
+            self.maximizeRestoreAppBtn.setIcon(QIcon("icons/window-maximize.svg"))
             self.left_grip.show()
             self.right_grip.show()
             self.top_grip.show()
