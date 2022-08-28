@@ -3,16 +3,18 @@ import sys
 from ctypes import cdll
 from random import choice
 
-from PyQt6.QtCore import QCoreApplication, QRect, QEasingCurve, QMetaObject, pyqtSignal, QUrl,Qt,QSize
-from PyQt6.QtGui import QFont, QMouseEvent, QCursor, QIcon, QDesktopServices
+from PyQt6.QtCore import QCoreApplication, QRect, QEasingCurve, QMetaObject, pyqtSignal, QUrl, Qt, QSize, \
+    QPropertyAnimation, QParallelAnimationGroup, QEvent, QTimer
+from PyQt6.QtGui import QFont, QMouseEvent, QCursor, QIcon, QDesktopServices, QColor
 from PyQt6.QtWidgets import QWidget, QFrame, QStackedWidget, QMainWindow, QVBoxLayout, QSizePolicy, QGridLayout, \
     QTextEdit, QApplication, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QListView, QListWidget, \
-    QListWidgetItem,QSizeGrip
+    QListWidgetItem, QSizeGrip, QGraphicsDropShadowEffect
 from Qss.Home import *
 from moudules import *
 
 widgets = None
-
+GLOBAL_STATE = False
+GLOBAL_TITLE_BAR = True
 name = None
 First = False
 Ans = []
@@ -29,13 +31,14 @@ s3 = "color: rgb(255, 255, 255);" \
      "font-weight:bold;"
 Sudoku = cdll.LoadLibrary("./Lib/libSudoku.dll")
 themeFile = ""
+UndoList = []
+RedoList = []
 
 
 class SudokuComboBox(QComboBox):
     def __init__(self, parent=None):
         super(QComboBox, self).__init__(parent)
         self.ListView = QListWidget()
-        # self.ListView.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.ListView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.ListView.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setModel(self.ListView.model())
@@ -60,7 +63,6 @@ class SudokuComboBox(QComboBox):
         QComboBox.showPopup(self)
         Widget = self.findChild(QFrame)
         Widget.move(Widget.x(), Widget.y() + 4)
-        self.popupAboutToBeShown.emit()
 
     def add(self, s: list):
         for i in s:
@@ -115,14 +117,25 @@ class Timer(QLabel):
             self.a = 0
             self.killTimer(self.timer)
 
-    def restart(self):
-        if self.a != 0:
-            self.a = 0
-            self.killTimer(self.timer)
-        self.timer = self.startTimer(10)
+
+def selectMenu(getStyle):
+    select = getStyle + Settings.MENU_SELECTED_STYLESHEET
+    return select
 
 
-# os.environ["QT_FONT_DPI"] = "96"
+def deselectMenu(getStyle):
+    deselect = getStyle.replace(Settings.MENU_SELECTED_STYLESHEET, "")
+    return deselect
+
+
+def returnStatus():
+    return GLOBAL_STATE
+
+
+def setStatus(status):
+    global GLOBAL_STATE
+    GLOBAL_STATE = status
+
 
 class MainWindow(QMainWindow):
     _startPos = None
@@ -132,62 +145,56 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
+        self.verticalMenuLayout = None
+        self.toggleBox = None
+        self.toggleButtonLayout = None
+        self.titleLeftApp = None
+        self.topLogo = None
+        self.leftMenuBg = None
+        self.appLayout = None
+        self.bgApp = None
+        self.toggleButton = None
+        self.appMargins = None
+        self.LeftMenuLayout = None
+        self.topLogoInfo = None
+        self.styleSheet = None
         self.initUI()
         Settings.ENABLE_CUSTOM_TITLE_BAR = True
         title = "Sudoku-Potato"
         description = "Based on DPLL"
-        # APPLY TEXTS
-        # TOGGLE MENU
-        # ///////////////////////////////////////////////////////////////
-        self.toggleMenuCheck = True
-        self.toggleButton.clicked.connect(lambda: UIFunctions.toggleMenu(self, self.toggleMenuCheck))
+
         self.setWindowTitle(title)
         self.titleRightInfo.setText(description)
-        # SET UI DEFINITIONS
-        # ///////////////////////////////////////////////////////////////
-        UIFunctions.uiDefinitions(self)
-        # BUTTONS CLICK
-        # ///////////////////////////////////////////////////////////////
 
-        # LEFT MENUS
-        self.btn_home.clicked.connect(self.buttonClick)
+        self.uiDefinitions()
+
+        self.Home.clicked.connect(self.buttonClick)
         self.Game_Sudoku.clicked.connect(self.buttonClick)
 
-        # widgets.Link.clicked.connect(self.buttonClick)
-        # EXTRA LEFT BOX
         def openCloseLeftBox():
-            UIFunctions.toggleLeftBox(self, True)
+            self.ToggleLeftBox(True)
 
         self.toggleLeftBox.clicked.connect(openCloseLeftBox)
         self.extraCloseColumnBtn.clicked.connect(openCloseLeftBox)
 
-        # EXTRA RIGHT BOX
         def openCloseRightBox():
-            UIFunctions.toggleRightBox(self, True)
+            self.toggleRightBox(True)
 
         self.settingsTopBtn.clicked.connect(openCloseRightBox)
 
-        # SHOW APP
-        # ///////////////////////////////////////////////////////////////
         self.show()
-        # SET CUSTOM THEME
-        # ///////////////////////////////////////////////////////////////
+
         useCustomTheme = True
         global themeFile
         themeFile = "Qss/py_dracula_light.qss"
 
-        # SET THEME AND HACKS
         if useCustomTheme:
-            # LOAD AND APPLY STYLE
-            UIFunctions.theme(self, themeFile, True)
+            self.theme(themeFile, True)
 
-            # SET HACKS
             AppFunctions.setThemeHack(self)
 
-        # SET HOME PAGE AND SELECT MENU
-        # ///////////////////////////////////////////////////////////////
         self.stackedWidget.setCurrentWidget(self.home)
-        self.btn_home.setStyleSheet(UIFunctions.selectMenu(self.btn_home.styleSheet()))
+        self.Home.setStyleSheet(selectMenu(self.Home.styleSheet()))
 
     def initUI(self):
         self.setFixedSize(QSize(1250, 825))
@@ -195,11 +202,7 @@ class MainWindow(QMainWindow):
         self.styleSheet = QWidget(self)
         self.styleSheet.setObjectName(u"styleSheet")
         self.styleSheet.setMouseTracking(True)
-        font = QFont()
-        font.setFamily(u"Segoe UI")
-        font.setPointSize(10)
-        font.setBold(False)
-        font.setItalic(False)
+
         self.styleSheet.setFont(font)
         self.appMargins = QVBoxLayout(self.styleSheet)
         self.appMargins.setSpacing(0)
@@ -216,14 +219,14 @@ class MainWindow(QMainWindow):
         self.appLayout.setContentsMargins(0, 0, 0, 0)
         self.leftMenuBg = QFrame(self.bgApp)
         self.leftMenuBg.setObjectName(u"leftMenuBg")
-        self.leftMenuBg.setMinimumSize(QSize(60, 0))
-        self.leftMenuBg.setMaximumSize(QSize(60, 16777215))
+        self.leftMenuBg.setMinimumSize(QSize(130, 0))
+        self.leftMenuBg.setMaximumSize(QSize(130, 16777215))
         self.leftMenuBg.setFrameShape(QFrame.frameShape(self.leftMenuBg).NoFrame)
         self.leftMenuBg.setFrameShadow(QFrame.frameShadow(self.leftMenuBg).Raised)
-        self.verticalLayout_3 = QVBoxLayout(self.leftMenuBg)
-        self.verticalLayout_3.setSpacing(0)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.LeftMenuLayout = QVBoxLayout(self.leftMenuBg)
+        self.LeftMenuLayout.setSpacing(0)
+        self.LeftMenuLayout.setObjectName(u"verticalLayout_3")
+        self.LeftMenuLayout.setContentsMargins(0, 0, 0, 0)
         self.topLogoInfo = QFrame(self.leftMenuBg)
         self.topLogoInfo.setObjectName(u"topLogoInfo")
         self.topLogoInfo.setMinimumSize(QSize(0, 50))
@@ -241,11 +244,7 @@ class MainWindow(QMainWindow):
         self.titleLeftApp = QLabel(self.topLogoInfo)
         self.titleLeftApp.setObjectName(u"titleLeftApp")
         self.titleLeftApp.setGeometry(QRect(70, 8, 160, 20))
-        font1 = QFont()
-        font1.setFamily(u"Segoe UI Semibold")
-        font1.setPointSize(12)
-        font1.setBold(False)
-        font1.setItalic(False)
+
         self.titleLeftApp.setFont(font1)
         self.titleLeftApp.setAlignment(
             Qt.AlignmentFlag.AlignLeading | Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
@@ -253,16 +252,12 @@ class MainWindow(QMainWindow):
         self.titleLeftDescription.setObjectName(u"titleLeftDescription")
         self.titleLeftDescription.setGeometry(QRect(70, 27, 160, 16))
         self.titleLeftDescription.setMaximumSize(QSize(16777215, 16))
-        font2 = QFont()
-        font2.setFamily(u"Segoe UI")
-        font2.setPointSize(8)
-        font2.setBold(False)
-        font2.setItalic(False)
+
         self.titleLeftDescription.setFont(font2)
         self.titleLeftDescription.setAlignment(
             Qt.AlignmentFlag.AlignLeading | Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
-        self.verticalLayout_3.addWidget(self.topLogoInfo)
+        self.LeftMenuLayout.addWidget(self.topLogoInfo)
 
         self.leftMenuFrame = QFrame(self.leftMenuBg)
         self.leftMenuFrame.setObjectName(u"leftMenuFrame")
@@ -277,60 +272,53 @@ class MainWindow(QMainWindow):
         self.toggleBox.setMaximumSize(QSize(16777215, 45))
         self.toggleBox.setFrameShape(QFrame.frameShape(self.toggleBox).NoFrame)
         self.toggleBox.setFrameShadow(QFrame.frameShadow(self.toggleBox).Raised)
-        self.verticalLayout_4 = QVBoxLayout(self.toggleBox)
-        self.verticalLayout_4.setSpacing(0)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.toggleButtonLayout = QVBoxLayout(self.toggleBox)
+        self.toggleButtonLayout.setSpacing(0)
+        self.toggleButtonLayout.setObjectName(u"verticalLayout_4")
+        self.toggleButtonLayout.setContentsMargins(0, 0, 0, 0)
         self.toggleButton = QPushButton(self.toggleBox)
         self.toggleButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.toggleButton.setObjectName(u"toggleButton")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.toggleButton.sizePolicy().hasHeightForWidth())
-        self.toggleButton.setSizePolicy(sizePolicy)
+        self.toggleButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
         self.toggleButton.setMinimumSize(QSize(0, 45))
         self.toggleButton.setFont(font)
         self.toggleButton.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.toggleButton.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.toggleButton.setIcon(QIcon("icons/bars.svg"))
         self.toggleButton.setIconSize(QSize(20, 20))
-        self.verticalLayout_4.addWidget(self.toggleButton)
-
+        self.toggleButtonLayout.addWidget(self.toggleButton)
         self.verticalMenuLayout.addWidget(self.toggleBox)
-
         self.topMenu = QFrame(self.leftMenuFrame)
         self.topMenu.setObjectName(u"topMenu")
         self.topMenu.setFrameShape(QFrame.frameShape(self.topMenu).NoFrame)
         self.topMenu.setFrameShadow(QFrame.frameShadow(self.topMenu).Raised)
-        self.verticalLayout_8 = QVBoxLayout(self.topMenu)
-        self.verticalLayout_8.setSpacing(0)
-        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
-        self.verticalLayout_8.setContentsMargins(0, 0, 0, 0)
-        self.btn_home = QPushButton(self.topMenu)
-        self.btn_home.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.btn_home.setObjectName(u"btn_home")
-        sizePolicy.setHeightForWidth(self.btn_home.sizePolicy().hasHeightForWidth())
-        self.btn_home.setSizePolicy(sizePolicy)
-        self.btn_home.setMinimumSize(QSize(0, 45))
-        self.btn_home.setFont(font)
-        self.btn_home.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        self.btn_home.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
-        self.btn_home.setIcon(QIcon("icons/house.svg"))
-        self.btn_home.setIconSize(QSize(20, 20))
-        self.verticalLayout_8.addWidget(self.btn_home)
+        self.TopMenuLayout = QVBoxLayout(self.topMenu)
+        self.TopMenuLayout.setSpacing(0)
+        self.TopMenuLayout.setObjectName(u"verticalLayout_8")
+        self.TopMenuLayout.setContentsMargins(0, 0, 0, 0)
+        self.Home = QPushButton(self.topMenu)
+        self.Home.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.Home.setObjectName(u"btn_home")
+
+        self.Home.setMinimumSize(QSize(0, 45))
+        self.Home.setFont(font)
+        self.Home.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.Home.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+        self.Home.setIcon(QIcon("icons/house.svg"))
+        self.Home.setIconSize(QSize(20, 20))
+        self.TopMenuLayout.addWidget(self.Home)
         self.Game_Sudoku = QPushButton(self.topMenu)
         self.Game_Sudoku.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.Game_Sudoku.setObjectName(u"Game_Sudoku")
-        sizePolicy.setHeightForWidth(self.Game_Sudoku.sizePolicy().hasHeightForWidth())
-        self.Game_Sudoku.setSizePolicy(sizePolicy)
+
         self.Game_Sudoku.setMinimumSize(QSize(0, 45))
         self.Game_Sudoku.setFont(font)
         self.Game_Sudoku.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.Game_Sudoku.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.Game_Sudoku.setIcon(QIcon("icons/gamepad.svg"))
         self.Game_Sudoku.setIconSize(QSize(20, 20))
-        self.verticalLayout_8.addWidget(self.Game_Sudoku)
+        self.TopMenuLayout.addWidget(self.Game_Sudoku)
         self.verticalMenuLayout.addWidget(self.topMenu, 0, Qt.AlignmentFlag.AlignTop)
         self.bottomMenu = QFrame(self.leftMenuFrame)
         self.bottomMenu.setObjectName(u"bottomMenu")
@@ -343,8 +331,7 @@ class MainWindow(QMainWindow):
         self.toggleLeftBox = QPushButton(self.bottomMenu)
         self.toggleLeftBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.toggleLeftBox.setObjectName(u"toggleLeftBox")
-        sizePolicy.setHeightForWidth(self.toggleLeftBox.sizePolicy().hasHeightForWidth())
-        self.toggleLeftBox.setSizePolicy(sizePolicy)
+
         self.toggleLeftBox.setMinimumSize(QSize(0, 45))
         self.toggleLeftBox.setFont(font)
         self.toggleLeftBox.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -356,7 +343,7 @@ class MainWindow(QMainWindow):
 
         self.verticalMenuLayout.addWidget(self.bottomMenu, 0, Qt.AlignmentFlag.AlignBottom)
 
-        self.verticalLayout_3.addWidget(self.leftMenuFrame)
+        self.LeftMenuLayout.addWidget(self.leftMenuFrame)
         self.appLayout.addWidget(self.leftMenuBg)
         self.extraLeftBox = QFrame(self.bgApp)
         self.extraLeftBox.setObjectName(u"extraLeftBox")
@@ -433,8 +420,7 @@ class MainWindow(QMainWindow):
         self.btn_share = QPushButton(self.extraTopMenu)
         self.btn_share.setObjectName(u"share")
         self.btn_share.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        sizePolicy.setHeightForWidth(self.btn_share.sizePolicy().hasHeightForWidth())
-        self.btn_share.setSizePolicy(sizePolicy)
+
         self.btn_share.setMinimumSize(QSize(0, 45))
         self.btn_share.setFont(font)
         self.btn_share.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -446,8 +432,7 @@ class MainWindow(QMainWindow):
         self.Adjustments_Button = QPushButton(self.extraTopMenu)
         self.Adjustments_Button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.Adjustments_Button.setObjectName(u"Adjustments")
-        sizePolicy.setHeightForWidth(self.Adjustments_Button.sizePolicy().hasHeightForWidth())
-        self.Adjustments_Button.setSizePolicy(sizePolicy)
+
         self.Adjustments_Button.setMinimumSize(QSize(0, 45))
         self.Adjustments_Button.setFont(font)
         self.Adjustments_Button.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -460,8 +445,7 @@ class MainWindow(QMainWindow):
         self.btn_more = QPushButton(self.extraTopMenu)
         self.btn_more.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.btn_more.setObjectName(u"more")
-        sizePolicy.setHeightForWidth(self.btn_more.sizePolicy().hasHeightForWidth())
-        self.btn_more.setSizePolicy(sizePolicy)
+
         self.btn_more.setMinimumSize(QSize(0, 45))
         self.btn_more.setFont(font)
         self.btn_more.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -500,7 +484,7 @@ class MainWindow(QMainWindow):
         self.extraColumLayout.addWidget(self.extraContent)
 
         self.appLayout.addWidget(self.extraLeftBox)
-        # others
+
         self.contentBox = QFrame(self.bgApp)
         self.contentBox.setObjectName(u"contentBox")
         self.contentBox.setFrameShape(QFrame.frameShape(self.contentBox).NoFrame)
@@ -582,12 +566,7 @@ class MainWindow(QMainWindow):
         self.maximizeRestoreAppBtn.setMinimumSize(QSize(30, 30))
         self.maximizeRestoreAppBtn.setMaximumSize(QSize(30, 30))
         self.maximizeRestoreAppBtn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        font3 = QFont()
-        font3.setFamily(u"Segoe UI")
-        font3.setPointSize(10)
-        font3.setBold(False)
-        font3.setItalic(False)
-        font3.setStyleStrategy(QFont.StyleStrategy.PreferDefault)
+
         self.maximizeRestoreAppBtn.setFont(font3)
         self.maximizeRestoreAppBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.maximizeRestoreAppBtn.setIcon(QIcon("icons/window-maximize.svg"))
@@ -699,40 +678,53 @@ class MainWindow(QMainWindow):
         RightMenuButtonsLayout = QVBoxLayout(RightMenuButtons)
         RightMenuButtonsLayout.setObjectName("RightMenuButtonsLayout")
         SudokuStartButton = QPushButton(self.RightMenu)
-        SudokuRestartButton = QPushButton(self.RightMenu)
+        SudokuClearButton = QPushButton(self.RightMenu)
         SudokuStopButton = QPushButton(self.RightMenu)
         SudokuInfoButton = QPushButton(self.RightMenu)
-        SudokuSubmitButton = QPushButton(self.RightMenu)
-        SudokuSubmitButton.setIcon(QIcon("icons/paper-plane.svg"))
+        SudokuCheckButton = QPushButton(self.RightMenu)
+        DoLayout = QHBoxLayout()
+        self.UndoButton = QPushButton()
+        self.RedoButton = QPushButton()
+        DoLayout.addWidget(self.UndoButton)
+        DoLayout.addWidget(self.RedoButton)
+        SudokuCheckButton.setIcon(QIcon("icons/paper-plane.svg"))
         SudokuStartButton.setIcon(QIcon("icons/circle-play.svg"))
-        SudokuRestartButton.setIcon(QIcon("icons/arrow-rotate-right.svg"))
+        SudokuClearButton.setIcon(QIcon("icons/burst.svg"))
         SudokuStopButton.setIcon(QIcon("icons/circle-pause.svg"))
         SudokuInfoButton.setIcon(QIcon("icons/circle-info.svg"))
+        self.UndoButton.setIcon(QIcon("icons/arrow-rotate-left.svg"))
+        self.RedoButton.setIcon(QIcon("icons/arrow-rotate-right.svg"))
+        self.UndoButton.setText("Undo")
+        self.RedoButton.setText("Redo")
+        self.UndoButton.setObjectName("Undo")
+        self.RedoButton.setObjectName("Redo")
         SudokuInfoButton.setText("Tip")
         SudokuStartButton.setText("Start")
         SudokuStopButton.setText("Stop")
-        SudokuRestartButton.setText("Restart")
-        SudokuSubmitButton.setText("Submit")
-        SudokuSubmitButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        SudokuClearButton.setText("Clear")
+        SudokuCheckButton.setText("Check")
+        SudokuCheckButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         SudokuInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         SudokuStartButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         SudokuStopButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        SudokuRestartButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        SudokuClearButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         SudokuStartButton.setObjectName("Start")
         SudokuStopButton.setObjectName("Stop")
-        SudokuRestartButton.setObjectName("Restart")
+        SudokuClearButton.setObjectName("Clear")
         SudokuInfoButton.setObjectName("Tip")
-        SudokuSubmitButton.setObjectName("Submit")
+        SudokuCheckButton.setObjectName("Check")
         SudokuStartButton.setMinimumSize(100, 25)
         SudokuStopButton.setMinimumSize(100, 25)
-        SudokuRestartButton.setMinimumSize(100, 25)
+        SudokuClearButton.setMinimumSize(100, 25)
         SudokuInfoButton.setMinimumSize(100, 25)
-        SudokuSubmitButton.setMinimumSize(100, 30)
+        SudokuCheckButton.setMinimumSize(100, 30)
         SudokuInfoButton.clicked.connect(self.buttonClick)
         SudokuStartButton.clicked.connect(self.buttonClick)
         SudokuStopButton.clicked.connect(self.buttonClick)
-        SudokuRestartButton.clicked.connect(self.buttonClick)
-        SudokuSubmitButton.clicked.connect(self.buttonClick)
+        SudokuClearButton.clicked.connect(self.buttonClick)
+        SudokuCheckButton.clicked.connect(self.buttonClick)
+        self.UndoButton.clicked.connect(self.buttonClick)
+        self.RedoButton.clicked.connect(self.buttonClick)
         self.SudokuLevel = SudokuComboBox(self.new)
         self.SudokuLevel.setMinimumSize(100, 30)
         self.SudokuLevel.setObjectName("combo")
@@ -762,9 +754,10 @@ class MainWindow(QMainWindow):
         self.TipBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         RightMenuButtonsLayout.addWidget(self.TimerLabel, 0, Qt.AlignmentFlag.AlignHCenter)
         RightMenuButtonsLayout.addWidget(SudokuStartButton)
-        RightMenuButtonsLayout.addWidget(SudokuRestartButton)
+        RightMenuButtonsLayout.addWidget(SudokuClearButton)
         RightMenuButtonsLayout.addWidget(SudokuStopButton)
         RightMenuButtonsLayout.addWidget(SudokuInfoButton)
+        RightMenuButtonsLayout.addLayout(DoLayout)
         RightMenuButtonsLayout.addWidget(self.SudokuLevel)
         RightMenuButtonsLayout.addWidget(self.TipLabel)
         RightMenuButtonsLayout.addWidget(self.RecordLabel, 0, Qt.AlignmentFlag.AlignHCenter)
@@ -773,7 +766,7 @@ class MainWindow(QMainWindow):
         Space.setStyleSheet("background-color: transparent;")
         Space.setMinimumSize(100, 1000)
         RightMenuButtonsLayout.addWidget(Space)
-        RightMenuButtonsLayout.addWidget(SudokuSubmitButton)
+        RightMenuButtonsLayout.addWidget(SudokuCheckButton)
         RightMenuVLayout.addWidget(RightMenuButtons, 0, Qt.AlignmentFlag.AlignTop)
         RightMenuVBox.addWidget(RightMenuContainers)
         self.HLayout.addWidget(self.RightMenu)
@@ -781,7 +774,7 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.new)
         self.verticalLayout_15.addWidget(self.stackedWidget)
         self.horizontalLayout_4.addWidget(self.pagesContainer)
-        #####
+
         self.RightBox = QFrame(self.content)
         self.RightBox.setObjectName(u"RightBox")
         self.RightBox.setMinimumSize(QSize(0, 0))
@@ -847,10 +840,7 @@ class MainWindow(QMainWindow):
         self.creditsLabel = QLabel(self.bottomBar)
         self.creditsLabel.setObjectName(u"creditsLabel")
         self.creditsLabel.setMaximumSize(QSize(16777215, 16))
-        font5 = QFont()
-        font5.setFamily(u"Segoe UI")
-        font5.setBold(False)
-        font5.setItalic(False)
+
         self.creditsLabel.setFont(font5)
         self.creditsLabel.setAlignment(
             Qt.AlignmentFlag.AlignLeading | Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
@@ -878,12 +868,13 @@ class MainWindow(QMainWindow):
         QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
+        self.textEdit.setHtml(QCoreApplication.translate("MainWindow", Left_Box, None))
         self.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.titleLeftApp.setText(QCoreApplication.translate("MainWindow", u"Sudoku", None))
         self.titleLeftDescription.setText(
             QCoreApplication.translate("MainWindow", u"Hello World", None))
-        self.toggleButton.setText(QCoreApplication.translate("MainWindow", u"        Hide", None))
-        self.btn_home.setText(QCoreApplication.translate("MainWindow", u"      Home", None))
+        self.toggleButton.setText(QCoreApplication.translate("MainWindow", u"        Menu", None))
+        self.Home.setText(QCoreApplication.translate("MainWindow", u"      Home", None))
         self.Game_Sudoku.setText(QCoreApplication.translate("MainWindow", u"      Sudoku", None))
         self.toggleLeftBox.setText(QCoreApplication.translate("MainWindow", u"      Left Box", None))
         self.extraLabel.setText(QCoreApplication.translate("MainWindow", u"      Left Box", None))
@@ -959,12 +950,26 @@ class MainWindow(QMainWindow):
         return string
 
     def buttonClick(self):
-        global First, Ans, Origin, Sudoku, themeFile
+        global First, Ans, Origin, Sudoku, themeFile, UndoList, RedoList
         btn = self.sender()
         btnName = btn.objectName()
+        if btnName == "Undo":
+            if len(UndoList) > 0:
+                Button = self.new.findChild(QPushButton, UndoList[len(UndoList) - 1][0])
+                RedoList.append([UndoList[len(UndoList) - 1][0], Button.text()])
+                Button.setText(UndoList[len(UndoList) - 1][1])
+                UndoList.pop(len(UndoList) - 1)
+        if btnName == "Redo":
+            if len(RedoList) > 0:
+                Button = self.new.findChild(QPushButton, RedoList[len(RedoList) - 1][0])
+                UndoList.append([RedoList[len(RedoList) - 1][0], Button.text()])
+                Button.setText(RedoList[len(RedoList) - 1][1])
+                RedoList.pop(len(RedoList) - 1)
         if btnName == "Start":
+            UndoList = []
+            RedoList = []
             string = self.SudokuLevel.currentText()
-            holes = int(re.findall("\d+\.?\d*", string)[0])
+            holes = int(re.findall("\d+", string)[0])
             with open("record/record.info", "rb") as f:
                 data = f.read().decode("utf-8")
                 data = data.split("\n")
@@ -985,9 +990,8 @@ class MainWindow(QMainWindow):
             self.TimerLabel.start()
         elif btnName == "Stop":
             self.TimerLabel.stop()
-        elif btnName == "Restart":
+        elif btnName == "Clear":
             self.SudokuInit()
-            self.TimerLabel.restart()
         elif btnName == "Tip":
             if len(Ans) != 0:
                 tip = choice(Ans)
@@ -1000,7 +1004,7 @@ class MainWindow(QMainWindow):
                 Button.setStyleSheet("")
             else:
                 print("Finished")
-        if btnName == "Submit":
+        if btnName == "Check":
             time = self.TimerLabel.a
             self.TimerLabel.end()
             with open("sudoku/sudoku.res", "w") as f:
@@ -1019,7 +1023,7 @@ class MainWindow(QMainWindow):
                 self.Tip("The ans is wrong")
             else:
                 string = self.SudokuLevel.currentText()
-                holes = int(re.findall("\d+\.?\d*", string)[0]) - 1
+                holes = int(re.findall("\d+", string)[0]) - 1
                 t = self.TimerLabel.text().strip(" ")
                 with open("record/record.info", "rb") as f:
                     data = f.read().decode("utf-8")
@@ -1036,30 +1040,12 @@ class MainWindow(QMainWindow):
                     self.Tip(t)
         if btnName == "btn_home":
             self.stackedWidget.setCurrentWidget(self.home)
-            UIFunctions.resetStyle(self, btnName)
-            btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
-            self.animation = QPropertyAnimation(self.leftMenuBg, b"minimumWidth")
-            a = self.leftMenuBg.width()
-            width = a if a == Settings.MENU_WIDTH else 60
-
-            self.animation.setDuration(Settings.TIME_ANIMATION)
-            self.animation.setStartValue(width)
-            self.animation.setEndValue(Settings.MENU_WIDTH)
-            self.animation.setEasingCurve(QEasingCurve.Type.InOutQuart)
-            self.animation.start()
+            self.resetStyle(btnName)
+            btn.setStyleSheet(selectMenu(btn.styleSheet()))
         if btnName == "Game_Sudoku":
-            self.stackedWidget.setCurrentWidget(self.new)  # SET PAGE
-            UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
-            btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU
-            self.animation = QPropertyAnimation(self.leftMenuBg, b"minimumWidth")
-            a = self.leftMenuBg.width()
-            width = a if a == Settings.MENU_WIDTH else 60
-
-            self.animation.setDuration(Settings.TIME_ANIMATION)
-            self.animation.setStartValue(width)
-            self.animation.setEndValue(Settings.MENU_WIDTH)
-            self.animation.setEasingCurve(QEasingCurve.Type.InOutQuart)
-            self.animation.start()
+            self.stackedWidget.setCurrentWidget(self.new)
+            self.resetStyle(btnName)
+            btn.setStyleSheet(selectMenu(btn.styleSheet()))
         if btnName == "more":
             QDesktopServices.openUrl(QUrl("https://github.com/EI233"))
         if btnName == "Adjustments":
@@ -1069,9 +1055,12 @@ class MainWindow(QMainWindow):
             else:
                 themeFile = "Qss/py_dracula_light.qss"
                 self.HomeDecription.setHtml(Light_Home)
-            UIFunctions.theme(self, themeFile, True)
-        if btnName=="share":
+            self.theme(themeFile, True)
+        if btnName == "share":
             QDesktopServices.openUrl(QUrl("https://github.com/EI233/sudoku"))
+        if btnName == "message":
+            QDesktopServices.openUrl(QUrl("https://github.com/EI233/sudoku/issues"))
+
     def ButtonClick(self):
         btn = self.sender()
         btnName = btn.objectName()
@@ -1100,25 +1089,20 @@ class MainWindow(QMainWindow):
         name = btnName
 
     def resizeEvent(self, event):
-        # Update Size Grips
-        UIFunctions.resize_grips(self)
-
-        # MOUSE CLICK EVENTS
-        # ///////////////////////////////////////////////////////////////
+        self.resize_grips()
 
     def max2normal(self):
-        # IF MAXIMIZED CHANGE TO NORMAL
-        if UIFunctions.returStatus(self):
-            UIFunctions.maximize_restore(self)
+        if self.returStatus():
+            self.maximize_restore()
 
-    def mouseMoveEvent(self, e: QMouseEvent):  # 重写移动事件
+    def mouseMoveEvent(self, e: QMouseEvent):
         if self._isTracking:
             self._endPos = e.globalPosition().toPoint() - self._startPos
             self.move(self._O + self._endPos)
 
     def mousePressEvent(self, e: QMouseEvent):
         if e.pos().x() <= 50:
-            UIFunctions.toggleMenu(self, True)
+            self.toggleMenu()
         if e.button() == Qt.MouseButton.LeftButton:
             self._isTracking = True
             self._O = e.globalPosition().toPoint() - e.pos()
@@ -1131,7 +1115,7 @@ class MainWindow(QMainWindow):
             self._endPos = None
 
     def keyPressEvent(self, event):
-        global name, Origin, s1, s2
+        global name, Origin, s1, s2, UndoList
         if event.key() == Qt.Key.Key_Down:
             if not (int(name.split(" ")[0]) == 15 or (int(name.split(" ")[0]) == 9 and int(name.split(" ")[1]) <= 6)):
                 ButtonName = "%02d %02d" % (int(name.split(" ")[0]) + 1, int(name.split(" ")[1]))
@@ -1153,7 +1137,8 @@ class MainWindow(QMainWindow):
                 Button = self.new.findChild(QPushButton, ButtonName)
                 self.ButtonStyle(Button, ButtonName)
         if name not in Origin and name is not None:
-            Button = self.new.findChild(QPushButton, name=name)
+            Button = self.new.findChild(QPushButton, name)
+            UndoList.append([name, Button.text()])
             if Qt.Key.Key_9 >= event.key() >= Qt.Key.Key_1:
                 val = str(event.key() - Qt.Key.Key_0)
                 if Button.text() != "":
@@ -1194,7 +1179,7 @@ class MainWindow(QMainWindow):
         else:
             with open("record/record.info", "rb") as f:
                 string = self.SudokuLevel.currentText()
-                holes = int(re.findall("\d+\.?\d*", string)[0])
+                holes = int(re.findall("\d+", string)[0])
                 if holes > 153:
                     self.Tip("       too many holes")
                     return
@@ -1218,7 +1203,7 @@ class MainWindow(QMainWindow):
         else:
             with open("record/record.info", "rb") as f:
                 string = self.SudokuLevel.currentText()
-                holes = int(re.findall("\d+\.?\d*", string)[0]) - 1
+                holes = int(re.findall("\d+", string)[0]) - 1
                 data = f.read().decode("utf-8")
                 data = data.split("\n")
                 a = int(data[holes - 1])
@@ -1233,11 +1218,181 @@ class MainWindow(QMainWindow):
     def Tip(self, param: str):
         self.TipBox.setText(param)
 
+    def maximize_restore(self):
+        global GLOBAL_STATE
+        status = GLOBAL_STATE
+        if not status:
+            self.showFullScreen()
+            GLOBAL_STATE = True
+            self.appMargins.setContentsMargins(0, 0, 0, 0)
+            self.maximizeRestoreAppBtn.setToolTip("Restore")
+            self.maximizeRestoreAppBtn.setIcon(QIcon(u"icons/window-restore.svg"))
+            self.maximizeRestoreAppBtn.setMinimumSize(QSize(25, 25))
+            self.maximizeRestoreAppBtn.setMaximumSize(QSize(25, 25))
+            self.left_grip.hide()
+            self.right_grip.hide()
+            self.top_grip.hide()
+            self.bottom_grip.hide()
+        else:
+            GLOBAL_STATE = False
+            self.showNormal()
+            self.appMargins.setContentsMargins(10, 10, 10, 10)
+            self.maximizeRestoreAppBtn.setToolTip("Maximize")
+            self.maximizeRestoreAppBtn.setIcon(QIcon("icons/window-maximize.svg"))
+            self.left_grip.show()
+            self.right_grip.show()
+            self.top_grip.show()
+            self.bottom_grip.show()
+
+    def ToggleLeftBox(self, enable):
+        if enable:
+            width = self.extraLeftBox.width()
+            widthRightBox = self.RightBox.width()
+            color = Settings.BTN_LEFT_BOX_COLOR
+            style = self.toggleLeftBox.styleSheet()
+            if width == 0:
+                self.toggleLeftBox.setStyleSheet(style + color)
+                if widthRightBox != 0:
+                    style = self.settingsTopBtn.styleSheet()
+                    self.settingsTopBtn.setStyleSheet(style.replace(Settings.BTN_RIGHT_BOX_COLOR, ''))
+            else:
+                self.toggleLeftBox.setStyleSheet(style.replace(color, ''))
+            self.start_box_animation(width, widthRightBox, "left")
+
+    def toggleRightBox(self, enable):
+        if enable:
+            width = self.RightBox.width()
+            widthLeftBox = self.extraLeftBox.width()
+            color = Settings.BTN_RIGHT_BOX_COLOR
+            style = self.settingsTopBtn.styleSheet()
+            if width == 0:
+                self.settingsTopBtn.setStyleSheet(style + color)
+                if widthLeftBox != 0:
+                    style = self.toggleLeftBox.styleSheet()
+                    self.toggleLeftBox.setStyleSheet(style.replace(Settings.BTN_LEFT_BOX_COLOR, ''))
+            else:
+                self.settingsTopBtn.setStyleSheet(style.replace(color, ''))
+            self.start_box_animation(widthLeftBox, width, "right")
+
+    def start_box_animation(self, left_box_width, right_box_width, direction):
+        right_width = 0
+        left_width = 0
+        s = ""
+
+        if left_box_width == 0 and direction == "left":
+            left_width = 240
+            s = "#Tip { padding-left: 0px;text-align:center;}" \
+                "#Stop { padding-left: 0px;text-align:center;}" \
+                "#Start { padding-left: 0px;text-align:center;}" \
+                "#Restart {padding-left: 0px;text-align:center;}"
+            self.RightFrame = QPropertyAnimation(self.RightMenu, b"minimumWidth")
+            self.RightFrame.setDuration(Settings.TIME_ANIMATION)
+            self.RightFrame.setStartValue(225)
+            self.RightFrame.setEndValue(150)
+            self.RightFrame.setEasingCurve(QEasingCurve.Type.InOutQuart)
+            self.RedoButton.setText("")
+            self.UndoButton.setText("")
+        if left_box_width != 0 and direction == "left":
+            s = "#Tip { padding-left: 50px;text-align:left;}" \
+                "#Stop { padding-left: 50px;text-align:left;}" \
+                "#Start { padding-left: 50px;text-align:left;}" \
+                "#Restart { padding-left: 50px;text-align:left;}"
+            left_width = 0
+            self.RedoButton.setText("Redo")
+            self.UndoButton.setText("Undo")
+            self.RightFrame = QPropertyAnimation(self.RightMenu, b"minimumWidth")
+            self.RightFrame.setDuration(Settings.TIME_ANIMATION)
+            self.RightFrame.setStartValue(150)
+            self.RightFrame.setEndValue(225)
+            self.RightFrame.setEasingCurve(QEasingCurve.Type.InOutQuart)
+        if right_box_width == 0 and direction == "right":
+            self.RedoButton.setText("Redo")
+            self.UndoButton.setText("Undo")
+            right_width = 160
+            self.RightFrame = QPropertyAnimation(self.RightMenu, b"minimumWidth")
+            self.RightFrame.setDuration(Settings.TIME_ANIMATION)
+            self.RightFrame.setStartValue(225)
+            self.RightFrame.setEndValue(150)
+            self.RightFrame.setEasingCurve(QEasingCurve.Type.InOutQuart)
+        if right_box_width != 0 and direction == "right":
+            right_width = 0
+            self.RightFrame = QPropertyAnimation(self.RightMenu, b"minimumWidth")
+            self.RightFrame.setDuration(Settings.TIME_ANIMATION)
+            self.RightFrame.setStartValue(150)
+            self.RightFrame.setEndValue(225)
+            self.RightFrame.setEasingCurve(QEasingCurve.Type.InOutQuart)
+        self.left_box = QPropertyAnimation(self.extraLeftBox, b"minimumWidth")
+        self.left_box.setDuration(Settings.TIME_ANIMATION)
+        self.left_box.setStartValue(left_box_width)
+        self.left_box.setEndValue(left_width)
+        self.left_box.setEasingCurve(QEasingCurve.Type.InOutQuart)
+        self.right_box = QPropertyAnimation(self.RightBox, b"minimumWidth")
+        self.right_box.setDuration(Settings.TIME_ANIMATION)
+        self.right_box.setStartValue(right_box_width)
+        self.right_box.setEndValue(right_width)
+        self.right_box.setEasingCurve(QEasingCurve.Type.InOutQuart)
+        self.group = QParallelAnimationGroup()
+        self.group.addAnimation(self.left_box)
+        self.group.addAnimation(self.right_box)
+        self.group.addAnimation(self.RightFrame)
+        self.group.start()
+        self.new.setStyleSheet(self.new.styleSheet() + s)
+
+    def selectStandardMenu(self, widget):
+        for w in self.topMenu.findChildren(QPushButton):
+            if w.objectName() == widget:
+                w.setStyleSheet(selectMenu(w.styleSheet()))
+
+    def resetStyle(self, widget):
+        for w in self.topMenu.findChildren(QPushButton):
+            if w.objectName() != widget:
+                w.setStyleSheet(deselectMenu(w.styleSheet()))
+
+    def theme(self, file, useCustomTheme):
+        if useCustomTheme:
+            string = open(file, 'r').read()
+            self.styleSheet.setStyleSheet(string)
+
+    def uiDefinitions(self):
+        def dobleClickMaximizeRestore(event):
+            if event.type() == QEvent.Type.MouseButtonDblClick:
+                QTimer.singleShot(250, lambda: self.maximize_restore())
+
+        self.titleRightInfo.mouseDoubleClickEvent = dobleClickMaximizeRestore
+        if Settings.ENABLE_CUSTOM_TITLE_BAR:
+            self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+            self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+            self.left_grip = CustomGrip(self, Qt.Edge.LeftEdge, True)
+            self.right_grip = CustomGrip(self, Qt.Edge.RightEdge, True)
+            self.top_grip = CustomGrip(self, Qt.Edge.TopEdge, True)
+            self.bottom_grip = CustomGrip(self, Qt.Edge.BottomEdge, True)
+        else:
+            self.appMargins.setContentsMargins(0, 0, 0, 0)
+            self.minimizeAppBtn.hide()
+            self.maximizeRestoreAppBtn.hide()
+            self.closeAppBtn.hide()
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(17)
+        self.shadow.setXOffset(0)
+        self.shadow.setYOffset(0)
+        self.shadow.setColor(QColor(0, 0, 0, 150))
+        self.bgApp.setGraphicsEffect(self.shadow)
+        self.minimizeAppBtn.clicked.connect(self.showMinimized)
+        self.maximizeRestoreAppBtn.clicked.connect(self.maximize_restore)
+        self.closeAppBtn.clicked.connect(self.close)
+
+    def resize_grips(self):
+        if Settings.ENABLE_CUSTOM_TITLE_BAR:
+            self.left_grip.setGeometry(0, 10, 10, self.height())
+            self.right_grip.setGeometry(self.width() - 10, 10, 10, self.height())
+            self.top_grip.setGeometry(0, 0, self.width(), 10)
+            self.bottom_grip.setGeometry(0, self.height() - 10, self.width(), 10)
+
 
 def main():
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon("icon.ico"))
-    ex = MainWindow()
+    MainWindow()
     sys.exit(app.exec())
 
 

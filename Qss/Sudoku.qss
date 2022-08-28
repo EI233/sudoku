@@ -92,7 +92,7 @@ border-radius: 8px;
 #Tip { padding-left: 50px;text-align:left;}
 #Stop { padding-left: 50px;text-align:left;}
 #Start { padding-left: 50px;text-align:left;}
-#Restart { padding-left: 50px;text-align:left;}
+#Clear { padding-left: 48px;text-align:left;}
 QToolTip {
 	color: #333;
 	background-color: #f8f8f2;
@@ -118,3 +118,50 @@ text-align: right;
 #TipBox{color: rgb(255, 255, 255);
     font-size: 15px;
     font-weight:bold;}
+    QSlider::groove:horizontal {
+    border-radius: 5px;
+    height: 10px;
+	margin: 0px;
+	background-color: rgb(52, 59, 72);
+}
+QSlider::groove:horizontal:hover {
+	background-color: rgb(55, 62, 76);
+}
+QSlider::handle:horizontal {
+    background-color: rgb(189, 147, 249);
+    border: none;
+    height: 10px;
+    width: 10px;
+    margin: 0px;
+	border-radius: 5px;
+}
+QSlider::handle:horizontal:hover {
+    background-color: rgb(195, 155, 255);
+}
+QSlider::handle:horizontal:pressed {
+    background-color: rgb(255, 121, 198);
+}
+
+QSlider::groove:vertical {
+    border-radius: 5px;
+    width: 10px;
+    margin: 0px;
+	background-color: rgb(52, 59, 72);
+}
+QSlider::groove:vertical:hover {
+	background-color: rgb(55, 62, 76);
+}
+QSlider::handle:vertical {
+    background-color: rgb(189, 147, 249);
+	border: none;
+    height: 10px;
+    width: 10px;
+    margin: 0px;
+	border-radius: 5px;
+}
+QSlider::handle:vertical:hover {
+    background-color: rgb(195, 155, 255);
+}
+QSlider::handle:vertical:pressed {
+    background-color: rgb(255, 121, 198);
+}
