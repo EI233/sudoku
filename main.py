@@ -145,6 +145,29 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
+        self.SudokuStartButton = None
+        self.extraContent = None
+        self.extraTopMenu = None
+        self.btn_share = None
+        self.verticalLayout_11 = None
+        self.verticalLayout_12 = None
+        self.verticalLayout_5 = None
+        self.extraTopLayout = None
+        self.extraIcon = None
+        self.extraCloseColumnBtn = None
+        self.extraLeftBox = None
+        self.toggleLeftBox = None
+        self.verticalLayout_9 = None
+        self.bottomMenu = None
+        self.extraTopBg = None
+        self.Home = None
+        self.TopMenuLayout = None
+        self.topMenu = None
+        self.leftMenuFrame = None
+        self.titleLeftDescription = None
+        self.extraColumLayout = None
+        self.RightMenu = None
+        self.Game_Sudoku = None
         self.verticalMenuLayout = None
         self.toggleBox = None
         self.toggleButtonLayout = None
@@ -299,7 +322,7 @@ class MainWindow(QMainWindow):
         self.TopMenuLayout.setContentsMargins(0, 0, 0, 0)
         self.Home = QPushButton(self.topMenu)
         self.Home.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.Home.setObjectName(u"btn_home")
+        self.Home.setObjectName(u"Home")
 
         self.Home.setMinimumSize(QSize(0, 45))
         self.Home.setFont(font)
@@ -677,52 +700,56 @@ class MainWindow(QMainWindow):
         RightMenuButtons.setObjectName(u"RightMenuButtons")
         RightMenuButtonsLayout = QVBoxLayout(RightMenuButtons)
         RightMenuButtonsLayout.setObjectName("RightMenuButtonsLayout")
-        SudokuStartButton = QPushButton(self.RightMenu)
-        SudokuClearButton = QPushButton(self.RightMenu)
-        SudokuStopButton = QPushButton(self.RightMenu)
-        SudokuInfoButton = QPushButton(self.RightMenu)
-        SudokuCheckButton = QPushButton(self.RightMenu)
+        self.SudokuStartButton = QPushButton(self.RightMenu)
+        self.SudokuClearButton = QPushButton(self.RightMenu)
+        self.SudokuStopButton = QPushButton(self.RightMenu)
+        self.SudokuInfoButton = QPushButton(self.RightMenu)
+        self.SudokuCheckButton = QPushButton(self.RightMenu)
+        self.SudokuClearButton.setDisabled(True)
+        self.SudokuStopButton.setDisabled(True)
+        self.SudokuInfoButton.setDisabled(True)
+        self.SudokuCheckButton.setDisabled(True)
         DoLayout = QHBoxLayout()
         self.UndoButton = QPushButton()
         self.RedoButton = QPushButton()
         DoLayout.addWidget(self.UndoButton)
         DoLayout.addWidget(self.RedoButton)
-        SudokuCheckButton.setIcon(QIcon("icons/paper-plane.svg"))
-        SudokuStartButton.setIcon(QIcon("icons/circle-play.svg"))
-        SudokuClearButton.setIcon(QIcon("icons/burst.svg"))
-        SudokuStopButton.setIcon(QIcon("icons/circle-pause.svg"))
-        SudokuInfoButton.setIcon(QIcon("icons/circle-info.svg"))
+        self.SudokuCheckButton.setIcon(QIcon("icons/paper-plane.svg"))
+        self.SudokuStartButton.setIcon(QIcon("icons/circle-play.svg"))
+        self.SudokuClearButton.setIcon(QIcon("icons/burst.svg"))
+        self.SudokuStopButton.setIcon(QIcon("icons/circle-pause.svg"))
+        self.SudokuInfoButton.setIcon(QIcon("icons/circle-info.svg"))
         self.UndoButton.setIcon(QIcon("icons/arrow-rotate-left.svg"))
         self.RedoButton.setIcon(QIcon("icons/arrow-rotate-right.svg"))
         self.UndoButton.setText("Undo")
         self.RedoButton.setText("Redo")
         self.UndoButton.setObjectName("Undo")
         self.RedoButton.setObjectName("Redo")
-        SudokuInfoButton.setText("Tip")
-        SudokuStartButton.setText("Start")
-        SudokuStopButton.setText("Stop")
-        SudokuClearButton.setText("Clear")
-        SudokuCheckButton.setText("Check")
-        SudokuCheckButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        SudokuInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        SudokuStartButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        SudokuStopButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        SudokuClearButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        SudokuStartButton.setObjectName("Start")
-        SudokuStopButton.setObjectName("Stop")
-        SudokuClearButton.setObjectName("Clear")
-        SudokuInfoButton.setObjectName("Tip")
-        SudokuCheckButton.setObjectName("Check")
-        SudokuStartButton.setMinimumSize(100, 25)
-        SudokuStopButton.setMinimumSize(100, 25)
-        SudokuClearButton.setMinimumSize(100, 25)
-        SudokuInfoButton.setMinimumSize(100, 25)
-        SudokuCheckButton.setMinimumSize(100, 30)
-        SudokuInfoButton.clicked.connect(self.buttonClick)
-        SudokuStartButton.clicked.connect(self.buttonClick)
-        SudokuStopButton.clicked.connect(self.buttonClick)
-        SudokuClearButton.clicked.connect(self.buttonClick)
-        SudokuCheckButton.clicked.connect(self.buttonClick)
+        self.SudokuInfoButton.setText("Tip")
+        self.SudokuStartButton.setText("Start")
+        self.SudokuStopButton.setText("Stop")
+        self.SudokuClearButton.setText("Clear")
+        self.SudokuCheckButton.setText("Check")
+        self.SudokuCheckButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.SudokuInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.SudokuStartButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.SudokuStopButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.SudokuClearButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.SudokuStartButton.setObjectName("Start")
+        self.SudokuStopButton.setObjectName("Stop")
+        self.SudokuClearButton.setObjectName("Clear")
+        self.SudokuInfoButton.setObjectName("Tip")
+        self.SudokuCheckButton.setObjectName("Check")
+        self.SudokuStartButton.setMinimumSize(100, 25)
+        self.SudokuStopButton.setMinimumSize(100, 25)
+        self.SudokuClearButton.setMinimumSize(100, 25)
+        self.SudokuInfoButton.setMinimumSize(100, 25)
+        self.SudokuCheckButton.setMinimumSize(100, 30)
+        self.SudokuInfoButton.clicked.connect(self.buttonClick)
+        self.SudokuStartButton.clicked.connect(self.buttonClick)
+        self.SudokuStopButton.clicked.connect(self.buttonClick)
+        self.SudokuClearButton.clicked.connect(self.buttonClick)
+        self.SudokuCheckButton.clicked.connect(self.buttonClick)
         self.UndoButton.clicked.connect(self.buttonClick)
         self.RedoButton.clicked.connect(self.buttonClick)
         self.SudokuLevel = SudokuComboBox(self.new)
@@ -753,10 +780,10 @@ class MainWindow(QMainWindow):
         self.TipBox.setReadOnly(True)
         self.TipBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         RightMenuButtonsLayout.addWidget(self.TimerLabel, 0, Qt.AlignmentFlag.AlignHCenter)
-        RightMenuButtonsLayout.addWidget(SudokuStartButton)
-        RightMenuButtonsLayout.addWidget(SudokuClearButton)
-        RightMenuButtonsLayout.addWidget(SudokuStopButton)
-        RightMenuButtonsLayout.addWidget(SudokuInfoButton)
+        RightMenuButtonsLayout.addWidget(self.SudokuStartButton)
+        RightMenuButtonsLayout.addWidget(self.SudokuClearButton)
+        RightMenuButtonsLayout.addWidget(self.SudokuStopButton)
+        RightMenuButtonsLayout.addWidget(self.SudokuInfoButton)
         RightMenuButtonsLayout.addLayout(DoLayout)
         RightMenuButtonsLayout.addWidget(self.SudokuLevel)
         RightMenuButtonsLayout.addWidget(self.TipLabel)
@@ -766,7 +793,7 @@ class MainWindow(QMainWindow):
         Space.setStyleSheet("background-color: transparent;")
         Space.setMinimumSize(100, 1000)
         RightMenuButtonsLayout.addWidget(Space)
-        RightMenuButtonsLayout.addWidget(SudokuCheckButton)
+        RightMenuButtonsLayout.addWidget(self.SudokuCheckButton)
         RightMenuVLayout.addWidget(RightMenuButtons, 0, Qt.AlignmentFlag.AlignTop)
         RightMenuVBox.addWidget(RightMenuContainers)
         self.HLayout.addWidget(self.RightMenu)
@@ -966,6 +993,10 @@ class MainWindow(QMainWindow):
                 Button.setText(RedoList[len(RedoList) - 1][1])
                 RedoList.pop(len(RedoList) - 1)
         if btnName == "Start":
+            self.SudokuClearButton.setEnabled(True)
+            self.SudokuStopButton.setEnabled(True)
+            self.SudokuInfoButton.setEnabled(True)
+            self.SudokuCheckButton.setEnabled(True)
             UndoList = []
             RedoList = []
             string = self.SudokuLevel.currentText()
@@ -990,6 +1021,20 @@ class MainWindow(QMainWindow):
             self.TimerLabel.start()
         elif btnName == "Stop":
             self.TimerLabel.stop()
+            if self.SudokuClearButton.isEnabled():
+                self.SudokuClearButton.setDisabled(True)
+                self.SudokuInfoButton.setDisabled(True)
+                self.SudokuCheckButton.setDisabled(True)
+                self.UndoButton.setDisabled(True)
+                self.RedoButton.setDisabled(True)
+                self.SudokuStartButton.setDisabled(True)
+            else:
+                self.SudokuClearButton.setEnabled(True)
+                self.SudokuInfoButton.setEnabled(True)
+                self.SudokuCheckButton.setEnabled(True)
+                self.UndoButton.setEnabled(True)
+                self.RedoButton.setEnabled(True)
+                self.SudokuStartButton.setEnabled(True)
         elif btnName == "Clear":
             self.SudokuInit()
         elif btnName == "Tip":
@@ -1038,7 +1083,7 @@ class MainWindow(QMainWindow):
                         t = "New record:" + t
                         self.RecordLabel.setText("Best record: " + t)
                     self.Tip(t)
-        if btnName == "btn_home":
+        if btnName == "Home":
             self.stackedWidget.setCurrentWidget(self.home)
             self.resetStyle(btnName)
             btn.setStyleSheet(selectMenu(btn.styleSheet()))
