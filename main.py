@@ -225,7 +225,6 @@ class MainWindow(QMainWindow):
         self.styleSheet = QWidget(self)
         self.styleSheet.setObjectName(u"styleSheet")
         self.styleSheet.setMouseTracking(True)
-
         self.styleSheet.setFont(font)
         self.appMargins = QVBoxLayout(self.styleSheet)
         self.appMargins.setSpacing(0)
@@ -518,8 +517,8 @@ class MainWindow(QMainWindow):
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.contentTopBg = QFrame(self.contentBox)
         self.contentTopBg.setObjectName(u"contentTopBg")
-        self.contentTopBg.setMinimumSize(QSize(0, 50))
-        self.contentTopBg.setMaximumSize(QSize(16777215, 50))
+        self.contentTopBg.setMinimumSize(QSize(0, 60))
+        self.contentTopBg.setMaximumSize(QSize(16777215, 60))
         self.contentTopBg.setFrameShape(QFrame.frameShape(self.contentTopBg).NoFrame)
         self.contentTopBg.setFrameShadow(QFrame.frameShadow(self.contentTopBg).Raised)
         self.horizontalLayout = QHBoxLayout(self.contentTopBg)
@@ -1051,7 +1050,6 @@ class MainWindow(QMainWindow):
                 print("Finished")
         if btnName == "Check":
             time = self.TimerLabel.a
-            self.TimerLabel.end()
             with open("sudoku/sudoku.res", "w") as f:
                 for i in range(15):
                     for j in range(15):
@@ -1067,6 +1065,7 @@ class MainWindow(QMainWindow):
             if res == 0:
                 self.Tip("The ans is wrong")
             else:
+                self.TimerLabel.end()
                 string = self.SudokuLevel.currentText()
                 holes = int(re.findall("\d+", string)[0]) - 1
                 t = self.TimerLabel.text().strip(" ")
@@ -1081,7 +1080,7 @@ class MainWindow(QMainWindow):
                                 i = i.encode("utf-8")
                                 fp.write(i)
                         t = "New record:" + t
-                        self.RecordLabel.setText("Best record: " + t)
+                        self.RecordLabel.setText( t)
                     self.Tip(t)
         if btnName == "Home":
             self.stackedWidget.setCurrentWidget(self.home)
@@ -1134,7 +1133,8 @@ class MainWindow(QMainWindow):
         name = btnName
 
     def resizeEvent(self, event):
-        self.resize_grips()
+        # self.resize_grips()
+        pass
 
     def max2normal(self):
         if self.returStatus():
@@ -1146,8 +1146,6 @@ class MainWindow(QMainWindow):
             self.move(self._O + self._endPos)
 
     def mousePressEvent(self, e: QMouseEvent):
-        if e.pos().x() <= 50:
-            self.toggleMenu()
         if e.button() == Qt.MouseButton.LeftButton:
             self._isTracking = True
             self._O = e.globalPosition().toPoint() - e.pos()
@@ -1237,6 +1235,7 @@ class MainWindow(QMainWindow):
                     s = "Best record: %02d : %02d" % (
                         a / 6000, a % 6000 / 100)
                 self.RecordLabel.setText(s)
+                self.RecordLabel.setText("123")
 
     def Edit(self):
         text = self.SudokuLevel.currentText()
@@ -1248,7 +1247,7 @@ class MainWindow(QMainWindow):
         else:
             with open("record/record.info", "rb") as f:
                 string = self.SudokuLevel.currentText()
-                holes = int(re.findall("\d+", string)[0]) - 1
+                holes = int(re.findall("\d+", string)[0])
                 data = f.read().decode("utf-8")
                 data = data.split("\n")
                 a = int(data[holes - 1])
@@ -1329,7 +1328,8 @@ class MainWindow(QMainWindow):
             s = "#Tip { padding-left: 0px;text-align:center;}" \
                 "#Stop { padding-left: 0px;text-align:center;}" \
                 "#Start { padding-left: 0px;text-align:center;}" \
-                "#Restart {padding-left: 0px;text-align:center;}"
+                "#Restart {padding-left: 0px;text-align:center;}"\
+                "#Clear { padding-left: 0px;text-align:center;}"
             self.RightFrame = QPropertyAnimation(self.RightMenu, b"minimumWidth")
             self.RightFrame.setDuration(Settings.TIME_ANIMATION)
             self.RightFrame.setStartValue(225)
@@ -1341,7 +1341,8 @@ class MainWindow(QMainWindow):
             s = "#Tip { padding-left: 50px;text-align:left;}" \
                 "#Stop { padding-left: 50px;text-align:left;}" \
                 "#Start { padding-left: 50px;text-align:left;}" \
-                "#Restart { padding-left: 50px;text-align:left;}"
+                "#Restart { padding-left: 50px;text-align:left;}" \
+                "#Clear { padding-left: 50px;text-align:left;}"
             left_width = 0
             self.RedoButton.setText("Redo")
             self.UndoButton.setText("Undo")
@@ -1427,11 +1428,15 @@ class MainWindow(QMainWindow):
         self.closeAppBtn.clicked.connect(self.close)
 
     def resize_grips(self):
-        if Settings.ENABLE_CUSTOM_TITLE_BAR:
-            self.left_grip.setGeometry(0, 10, 10, self.height())
-            self.right_grip.setGeometry(self.width() - 10, 10, 10, self.height())
-            self.top_grip.setGeometry(0, 0, self.width(), 10)
-            self.bottom_grip.setGeometry(0, self.height() - 10, self.width(), 10)
+        # if Settings.ENABLE_CUSTOM_TITLE_BAR:
+        #     self.left_grip.setGeometry(10, 0, 10, self.height())
+        #     self.right_grip.setGeometry(self.width() - 10, 10, 10, self.height())
+        #     self.top_grip.setGeometry(0, 0, self.width(), 10)
+        #     self.bottom_grip.setGeometry(0, self.height() - 10, self.width(), 10)
+        pass
+
+    def returStatus(self):
+        pass
 
 
 def main():
