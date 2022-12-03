@@ -140,7 +140,7 @@ Extra Tab */
 #extraIcon {
 	background-position: center;
 	background-repeat: no-repeat;
-	background-image: url(:/icons/images/icons/icon_settings.png);
+	background-image: url(icons/gear.svg);
 }
 
 /* Label */

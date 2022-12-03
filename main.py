@@ -224,7 +224,6 @@ class MainWindow(QMainWindow):
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.styleSheet = QWidget(self)
         self.styleSheet.setObjectName(u"styleSheet")
-        self.styleSheet.setMouseTracking(True)
         self.styleSheet.setFont(font)
         self.appMargins = QVBoxLayout(self.styleSheet)
         self.appMargins.setSpacing(0)
@@ -1080,7 +1079,7 @@ class MainWindow(QMainWindow):
                                 i = i.encode("utf-8")
                                 fp.write(i)
                         t = "New record:" + t
-                        self.RecordLabel.setText( t)
+                        self.RecordLabel.setText(t)
                     self.Tip(t)
         if btnName == "Home":
             self.stackedWidget.setCurrentWidget(self.home)
@@ -1328,7 +1327,6 @@ class MainWindow(QMainWindow):
             s = "#Tip { padding-left: 0px;text-align:center;}" \
                 "#Stop { padding-left: 0px;text-align:center;}" \
                 "#Start { padding-left: 0px;text-align:center;}" \
-                "#Restart {padding-left: 0px;text-align:center;}"\
                 "#Clear { padding-left: 0px;text-align:center;}"
             self.RightFrame = QPropertyAnimation(self.RightMenu, b"minimumWidth")
             self.RightFrame.setDuration(Settings.TIME_ANIMATION)
@@ -1341,7 +1339,6 @@ class MainWindow(QMainWindow):
             s = "#Tip { padding-left: 50px;text-align:left;}" \
                 "#Stop { padding-left: 50px;text-align:left;}" \
                 "#Start { padding-left: 50px;text-align:left;}" \
-                "#Restart { padding-left: 50px;text-align:left;}" \
                 "#Clear { padding-left: 50px;text-align:left;}"
             left_width = 0
             self.RedoButton.setText("Redo")
@@ -1428,11 +1425,6 @@ class MainWindow(QMainWindow):
         self.closeAppBtn.clicked.connect(self.close)
 
     def resize_grips(self):
-        # if Settings.ENABLE_CUSTOM_TITLE_BAR:
-        #     self.left_grip.setGeometry(10, 0, 10, self.height())
-        #     self.right_grip.setGeometry(self.width() - 10, 10, 10, self.height())
-        #     self.top_grip.setGeometry(0, 0, self.width(), 10)
-        #     self.bottom_grip.setGeometry(0, self.height() - 10, self.width(), 10)
         pass
 
     def returStatus(self):
